@@ -76,5 +76,29 @@ async def confirm_shift(callback: types.CallbackQuery):
             await callback.message.edit_text(f"⚠️ Ви вже записані на {shift_type} {date_str}.")
         else:
             await callback.message.edit_text(f"❌ Ця зміна вже зайнята: {hbold(current)}.")
-    else:
+        return
 
+    schedule[date_str][shift_type] = user_fullname
+    save_schedule(schedule)
+    await callback.message.edit_text(f"✅ Вас записано на {shift_type} {date_str}.")
+
+# /grafik — перегляд усіх записів
+@dp.message(Command("grafik"))
+async def show_schedule(message: types.Message):
+    schedule = load_schedule()
+    if not schedule:
+        await message.answer("📭 Графік поки що порожній.")
+        return
+
+    response = "📅 <b>Графік чергувань:</b>\n"
+    for date_str in sorted(schedule.keys()):
+        response += f"\n<b>{date_str}</b>\n"
+        for shift in SHIFT_TYPES:
+            user = schedule[date_str].get(shift, "вільно")
+            response += f"• {shift}: {user}\n"
+    await message.answer(response)
+
+# /vidmina — скасування чергування
+@dp.message(Command("vidmina"))
+async def cancel_shift(message: types.Message):
+    us
